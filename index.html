@@ -1,0 +1,1419 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>اختبار Firebase FCM</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family:
+                Arial,
+                Tahoma,
+                sans-serif;
+
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .container {
+            width: min(900px, 95%);
+            margin: 25px auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 22px;
+            margin-bottom: 20px;
+
+            box-shadow:
+                0 5px 25px
+                rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        button {
+            border: 0;
+            padding: 13px 20px;
+
+            border-radius: 10px;
+
+            cursor: pointer;
+
+            font-size: 16px;
+            font-weight: bold;
+
+            margin: 5px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .success {
+            background: #16a34a;
+            color: white;
+        }
+
+        .secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .status {
+            padding: 15px;
+
+            border-radius: 10px;
+
+            margin: 15px 0;
+
+            word-break: break-word;
+        }
+
+        .success-box {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .error-box {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .warning-box {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .info-box {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .token {
+            background: #0f172a;
+            color: #e2e8f0;
+
+            padding: 15px;
+
+            border-radius: 10px;
+
+            word-break: break-all;
+
+            direction: ltr;
+            text-align: left;
+
+            font-family: monospace;
+
+            font-size: 13px;
+
+            max-height: 220px;
+
+            overflow: auto;
+        }
+
+        .notification {
+            border: 1px solid #cbd5e1;
+
+            border-radius: 12px;
+
+            padding: 15px;
+
+            margin-top: 12px;
+
+            background: #f8fafc;
+        }
+
+        .notification-title {
+            font-weight: bold;
+
+            color: #2563eb;
+
+            font-size: 18px;
+        }
+
+        .small {
+            color: #64748b;
+
+            font-size: 13px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+
+            word-break: break-word;
+
+            direction: ltr;
+
+            text-align: left;
+        }
+
+        .row {
+            display: flex;
+
+            gap: 10px;
+
+            flex-wrap: wrap;
+        }
+
+        .row button {
+            flex: 1;
+        }
+
+        .check {
+            padding: 8px 12px;
+
+            background: #f8fafc;
+
+            border-radius: 8px;
+
+            margin: 5px 0;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <!-- ================================================= -->
+    <!-- العنوان -->
+    <!-- ================================================= -->
+
+    <div class="card">
+
+        <h1>
+            🔔 اختبار Firebase Cloud Messaging
+        </h1>
+
+        <p>
+            صفحة اختبار FCM Web على المتصفح.
+        </p>
+
+        <div
+            id="status"
+            class="status warning-box">
+
+            لم يتم تشغيل FCM بعد.
+
+        </div>
+
+
+        <div class="row">
+
+            <button
+                class="primary"
+                onclick="initializeFCM()">
+
+                🔔 تفعيل FCM
+
+            </button>
+
+
+            <button
+                class="secondary"
+                onclick="copyToken()">
+
+                📋 نسخ Token
+
+            </button>
+
+
+            <button
+                class="success"
+                onclick="testLocalNotification()">
+
+                🧪 اختبار إشعار محلي
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- فحوصات -->
+    <!-- ================================================= -->
+
+    <div class="card">
+
+        <h2>
+            🔍 حالة النظام
+        </h2>
+
+
+        <div
+            id="checks">
+
+            <div class="check">
+                Service Worker:
+                <b id="swStatus">
+                    لم يتم الفحص
+                </b>
+            </div>
+
+
+            <div class="check">
+                FCM Support:
+                <b id="fcmStatus">
+                    لم يتم الفحص
+                </b>
+            </div>
+
+
+            <div class="check">
+                Notification Permission:
+                <b id="permissionStatus">
+                    لم يتم الفحص
+                </b>
+            </div>
+
+
+            <div class="check">
+                Protocol:
+                <b id="protocolStatus">
+                    -
+                </b>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- Token -->
+    <!-- ================================================= -->
+
+    <div class="card">
+
+        <h2>
+            🔑 FCM Registration Token
+        </h2>
+
+        <p class="small">
+
+            هذا هو Token الخاص بهذا المتصفح.
+
+            يمكنك استخدامه لإرسال إشعار تجريبي
+            من Firebase Console.
+
+        </p>
+
+
+        <div
+            id="token"
+            class="token">
+
+            لم يتم الحصول على Token بعد...
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- الإشعارات -->
+    <!-- ================================================= -->
+
+    <div class="card">
+
+        <h2>
+            📨 الإشعارات المستلمة
+        </h2>
+
+
+        <div id="notifications">
+
+            <p class="small">
+
+                لم يتم استلام أي إشعار حتى الآن.
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- معلومات الجهاز -->
+    <!-- ================================================= -->
+
+    <div class="card">
+
+        <h2>
+            📱 معلومات الجهاز
+        </h2>
+
+
+        <div id="deviceInfo"></div>
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- Log -->
+    <!-- ================================================= -->
+
+    <div class="card">
+
+        <h2>
+            🛠 سجل التشخيص
+        </h2>
+
+
+        <pre
+            id="log"
+            style="
+                background:#0f172a;
+                color:#e2e8f0;
+                padding:15px;
+                border-radius:10px;
+                max-height:350px;
+                overflow:auto;
+            ">جاهز...</pre>
+
+    </div>
+
+
+</div>
+
+
+
+<!-- ===================================================== -->
+<!-- Firebase -->
+<!-- ===================================================== -->
+
+<script type="module">
+
+
+    import {
+        initializeApp
+    }
+
+    from
+    "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+
+
+    import {
+
+        getMessaging,
+
+        getToken,
+
+        onMessage,
+
+        isSupported
+
+    }
+
+    from
+    "https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging.js";
+
+
+
+    // ====================================================
+    // Firebase Configuration
+    // ====================================================
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyCvnlZRNpMwC3xAEh8KYgvMGEi1vQ0NZDk",
+  authDomain: "myfirsttestappproject.firebaseapp.com",
+  projectId: "myfirsttestappproject",
+  storageBucket: "myfirsttestappproject.firebasestorage.app",
+  messagingSenderId: "878802593378",
+  appId: "1:878802593378:web:63956e9e5460bb027d133b"
+};
+
+const VAPID_KEY = "BPm0EL2_FeyWEgXHvIjP5FJe1dnORcbRenkLE2ixSqAwiA-j3QQws1XEEn6Jb_rF6rWgHgUTQ88nknel2t94DLM";
+
+
+
+    // ====================================================
+    // Variables
+    // ====================================================
+
+    let app = null;
+
+    let messaging = null;
+
+    let currentToken = "";
+
+
+
+    // ====================================================
+    // Log
+    // ====================================================
+
+    function log(message, data = null) {
+
+        const element =
+            document.getElementById("log");
+
+
+        const time =
+            new Date().toLocaleTimeString();
+
+
+        let text =
+            `[${time}] ${message}`;
+
+
+        if (data !== null) {
+
+            try {
+
+                text +=
+                    "\n" +
+                    JSON.stringify(
+                        data,
+                        null,
+                        2
+                    );
+
+            } catch {
+
+                text +=
+                    "\n" +
+                    String(data);
+
+            }
+
+        }
+
+
+        element.textContent +=
+            "\n\n" +
+            text;
+
+
+        console.log(
+            message,
+            data
+        );
+    }
+
+
+
+    // ====================================================
+    // Status
+    // ====================================================
+
+    function setStatus(
+        message,
+        type = "warning-box"
+    ) {
+
+        const status =
+            document.getElementById(
+                "status"
+            );
+
+
+        status.className =
+            "status " + type;
+
+
+        status.innerHTML =
+            message;
+    }
+
+
+
+    // ====================================================
+    // Escape HTML
+    // ====================================================
+
+    function escapeHTML(value) {
+
+        return String(value)
+
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+
+            .replace(
+                /</g,
+                "&lt;"
+            )
+
+            .replace(
+                />/g,
+                "&gt;"
+            )
+
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+
+            .replace(
+                /'/g,
+                "&#039;"
+            );
+    }
+
+
+
+    // ====================================================
+    // Initialize FCM
+    // ====================================================
+
+    window.initializeFCM =
+    async function () {
+
+
+        try {
+
+
+            log(
+                "بدأ تشغيل FCM..."
+            );
+
+
+            setStatus(
+                "⏳ جاري فحص البيئة...",
+                "warning-box"
+            );
+
+
+
+            // ============================================
+            // Protocol
+            // ============================================
+
+            const protocol =
+                location.protocol;
+
+
+            document.getElementById(
+                "protocolStatus"
+            ).textContent =
+                protocol;
+
+
+
+            if (
+
+                protocol !== "https:" &&
+
+                location.hostname !==
+                    "localhost" &&
+
+                location.hostname !==
+                    "127.0.0.1"
+
+            ) {
+
+                throw new Error(
+
+                    "يجب تشغيل FCM عبر HTTPS أو localhost."
+
+                );
+
+            }
+
+
+            log(
+                "Protocol OK: " +
+                protocol
+            );
+
+
+
+            // ============================================
+            // Service Worker support
+            // ============================================
+
+            if (
+                !("serviceWorker" in navigator)
+            ) {
+
+                throw new Error(
+
+                    "المتصفح لا يدعم Service Worker."
+
+                );
+
+            }
+
+
+            document.getElementById(
+                "swStatus"
+            ).textContent =
+                "مدعوم ✅";
+
+
+
+            // ============================================
+            // Register Service Worker
+            // ============================================
+
+            log(
+                "جاري تسجيل Service Worker..."
+            );
+
+
+            const registration =
+
+                await navigator.serviceWorker.register(
+
+                    "./firebase-messaging-sw.js",
+
+                    {
+                        scope: "./"
+                    }
+
+                );
+
+
+            log(
+                "تم تسجيل Service Worker بنجاح.",
+                {
+                    scope:
+                        registration.scope
+                }
+            );
+
+
+            document.getElementById(
+                "swStatus"
+            ).textContent =
+                "مسجل ✅";
+
+
+
+            // ============================================
+            // Check FCM support
+            // ============================================
+
+            log(
+                "جاري فحص دعم FCM..."
+            );
+
+
+            const supported =
+                await isSupported();
+
+
+            log(
+                "FCM Supported:",
+                supported
+            );
+
+
+            if (!supported) {
+
+                document.getElementById(
+                    "fcmStatus"
+                ).textContent =
+                    "غير مدعوم ❌";
+
+
+                throw new Error(
+
+                    "Firebase Cloud Messaging غير مدعوم في هذه البيئة."
+
+                );
+
+            }
+
+
+            document.getElementById(
+                "fcmStatus"
+            ).textContent =
+                "مدعوم ✅";
+
+
+
+            // ============================================
+            // Initialize Firebase
+            // ============================================
+
+            log(
+                "جاري تشغيل Firebase..."
+            );
+
+
+            app =
+                initializeApp(
+                    firebaseConfig
+                );
+
+
+            messaging =
+                getMessaging(app);
+
+
+            log(
+                "تم تشغيل Firebase Messaging."
+            );
+
+
+
+            // ============================================
+            // Notification permission
+            // ============================================
+
+            log(
+                "جاري طلب صلاحية الإشعارات..."
+            );
+
+
+            const permission =
+                await Notification.requestPermission();
+
+
+            document.getElementById(
+                "permissionStatus"
+            ).textContent =
+                permission;
+
+
+            log(
+                "Notification Permission:",
+                permission
+            );
+
+
+            if (
+                permission !== "granted"
+            ) {
+
+                throw new Error(
+
+                    "لم يتم السماح بالإشعارات."
+
+                );
+
+            }
+
+
+
+            // ============================================
+            // Get FCM Token
+            // ============================================
+
+            setStatus(
+
+                "⏳ جاري تسجيل الجهاز في Firebase...",
+
+                "warning-box"
+
+            );
+
+
+            log(
+                "جاري طلب FCM Registration Token..."
+            );
+
+
+            currentToken =
+
+                await getToken(
+
+                    messaging,
+
+                    {
+
+                        vapidKey:
+                            VAPID_KEY,
+
+                        serviceWorkerRegistration:
+                            registration
+
+                    }
+
+                );
+
+
+
+            // ============================================
+            // Token result
+            // ============================================
+
+            if (!currentToken) {
+
+                throw new Error(
+
+                    "Firebase لم يرجع Registration Token."
+
+                );
+
+            }
+
+
+            log(
+                "تم الحصول على FCM Token بنجاح."
+            );
+
+
+            console.log(
+                "FCM TOKEN:",
+                currentToken
+            );
+
+
+
+            document.getElementById(
+                "token"
+            ).textContent =
+                currentToken;
+
+
+
+            setStatus(
+
+                "✅ تم تشغيل FCM بنجاح والحصول على Token.",
+
+                "success-box"
+
+            );
+
+
+
+            // ============================================
+            // Foreground messages
+            // ============================================
+
+            onMessage(
+
+                messaging,
+
+                function(payload) {
+
+
+                    log(
+
+                        "🔥 تم استلام FCM Message.",
+
+                        payload
+
+                    );
+
+
+                    showNotification(
+                        payload
+                    );
+
+
+                }
+
+            );
+
+
+            log(
+                "تم تشغيل مستمع الرسائل."
+            );
+
+
+        }
+
+        catch (error) {
+
+
+            console.error(
+                "FCM ERROR:",
+                error
+            );
+
+
+            log(
+                "❌ FCM ERROR",
+                {
+                    name:
+                        error.name,
+
+                    code:
+                        error.code,
+
+                    message:
+                        error.message,
+
+                    stack:
+                        error.stack
+                }
+            );
+
+
+            setStatus(
+
+                `
+                ❌ حدث خطأ
+
+                <br><br>
+
+                <b>النوع:</b>
+                ${escapeHTML(
+                    error.name || ""
+                )}
+
+                <br>
+
+                <b>Code:</b>
+                ${escapeHTML(
+                    error.code || ""
+                )}
+
+                <br>
+
+                <b>Message:</b>
+                ${escapeHTML(
+                    error.message || ""
+                )}
+                `,
+
+                "error-box"
+
+            );
+
+        }
+
+    };
+
+
+
+    // ====================================================
+    // Show received notification
+    // ====================================================
+
+    function showNotification(
+        payload
+    ) {
+
+
+        const container =
+            document.getElementById(
+                "notifications"
+            );
+
+
+        // إزالة الرسالة الافتراضية
+        if (
+            container.querySelector(
+                ".small"
+            )
+        ) {
+
+            container.innerHTML = "";
+
+        }
+
+
+        const notification =
+            payload.notification || {};
+
+
+        const data =
+            payload.data || {};
+
+
+        const title =
+
+            notification.title ||
+
+            data.title ||
+
+            "إشعار جديد";
+
+
+        const body =
+
+            notification.body ||
+
+            data.body ||
+
+            "تم استلام رسالة جديدة";
+
+
+        const time =
+            new Date()
+            .toLocaleTimeString();
+
+
+        const div =
+            document.createElement(
+                "div"
+            );
+
+
+        div.className =
+            "notification";
+
+
+        div.innerHTML = `
+
+            <div
+                class="notification-title">
+
+                🔔
+                ${escapeHTML(title)}
+
+            </div>
+
+
+            <p>
+
+                ${escapeHTML(body)}
+
+            </p>
+
+
+            <div class="small">
+
+                وقت الاستلام:
+                ${escapeHTML(time)}
+
+            </div>
+
+
+            <details>
+
+                <summary>
+                    عرض بيانات FCM
+                </summary>
+
+
+                <pre>
+
+${escapeHTML(
+    JSON.stringify(
+        payload,
+        null,
+        2
+    )
+)}
+
+                </pre>
+
+            </details>
+
+        `;
+
+
+        container.prepend(
+            div
+        );
+
+
+
+        // =============================================
+        // Notification API
+        // =============================================
+
+        if (
+            Notification.permission ===
+            "granted"
+        ) {
+
+            try {
+
+                new Notification(
+                    title,
+                    {
+                        body:
+                            body
+                    }
+                );
+
+            } catch (e) {
+
+                log(
+                    "تعذر إنشاء Browser Notification.",
+                    e
+                );
+
+            }
+
+        }
+
+    }
+
+
+
+    // ====================================================
+    // Copy Token
+    // ====================================================
+
+    window.copyToken =
+    async function () {
+
+
+        if (!currentToken) {
+
+            alert(
+                "قم بتفعيل FCM أولاً."
+            );
+
+            return;
+
+        }
+
+
+        try {
+
+
+            await navigator
+                .clipboard
+                .writeText(
+                    currentToken
+                );
+
+
+            alert(
+                "✅ تم نسخ FCM Token."
+            );
+
+
+        }
+
+        catch (error) {
+
+
+            log(
+                "فشل نسخ Token.",
+                error
+            );
+
+
+            alert(
+                "تعذر النسخ التلقائي. انسخ Token يدوياً."
+            );
+
+        }
+
+    };
+
+
+
+    // ====================================================
+    // Local notification test
+    // ====================================================
+
+    window.testLocalNotification =
+    async function () {
+
+
+        if (
+            !("Notification" in window)
+        ) {
+
+            alert(
+                "المتصفح لا يدعم Notifications."
+            );
+
+            return;
+
+        }
+
+
+        let permission =
+            Notification.permission;
+
+
+        if (
+            permission !== "granted"
+        ) {
+
+            permission =
+                await Notification
+                    .requestPermission();
+
+        }
+
+
+        if (
+            permission !== "granted"
+        ) {
+
+            alert(
+                "يجب السماح بالإشعارات."
+            );
+
+            return;
+
+        }
+
+
+        try {
+
+
+            new Notification(
+
+                "🧪 اختبار محلي",
+
+                {
+
+                    body:
+                        "هذا إشعار محلي وليس FCM.",
+
+                    icon:
+                        "https://firebase.google.com/favicon.ico"
+
+                }
+
+            );
+
+
+            log(
+                "تم إنشاء إشعار محلي."
+            );
+
+
+        }
+
+        catch (error) {
+
+
+            log(
+                "فشل الإشعار المحلي.",
+                error
+            );
+
+
+            alert(
+                error.message
+            );
+
+        }
+
+    };
+
+
+
+    // ====================================================
+    // Device information
+    // ====================================================
+
+    document.getElementById(
+        "deviceInfo"
+    ).innerHTML = `
+
+        <p>
+
+            <b>User Agent:</b>
+
+            <br>
+
+            ${escapeHTML(
+                navigator.userAgent
+            )}
+
+        </p>
+
+
+        <p>
+
+            <b>Platform:</b>
+
+            ${escapeHTML(
+                navigator.platform
+            )}
+
+        </p>
+
+
+        <p>
+
+            <b>Language:</b>
+
+            ${escapeHTML(
+                navigator.language
+            )}
+
+        </p>
+
+
+        <p>
+
+            <b>Online:</b>
+
+            ${navigator.onLine
+                ? "نعم ✅"
+                : "لا ❌"}
+
+        </p>
+
+
+        <p>
+
+            <b>Protocol:</b>
+
+            ${escapeHTML(
+                location.protocol
+            )}
+
+        </p>
+
+
+        <p>
+
+            <b>Host:</b>
+
+            ${escapeHTML(
+                location.host
+            )}
+
+        </p>
+
+    `;
+
+
+    // ====================================================
+    // Initial log
+    // ====================================================
+
+    log(
+        "الصفحة جاهزة."
+    );
+
+
+</script>
+
+
+</body>
+</html>
+
